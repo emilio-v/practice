@@ -1,20 +1,31 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { reqResApi } from '../api/reqRes';
 import { ReqResList, Data } from '../interfaces/reqRes.interface';
 
 const Users = () => {
   const [users, setUsers] = useState<Data[]>([]);
 
+  const pageRef = useRef(1);
+
   useEffect(() => {
     // call to API
-    reqResApi
-      .get<ReqResList>('/users')
-      .then(resp => {
-        const { data } = resp.data;
-        setUsers(data);
-      })
-      .catch(console.log);
+    getUsers();
   }, []);
+
+  const getUsers = async () => {
+    const resp = await reqResApi.get<ReqResList>('/users', {
+      params: {
+        page: pageRef.current,
+      },
+    });
+
+    if (resp.data.data.length) {
+      setUsers(resp.data.data);
+      pageRef.current++;
+    } else {
+      alert('There are not more records');
+    }
+  };
 
   const renderItem = ({ id, avatar, first_name, last_name, email }: Data) => {
     return (
@@ -43,6 +54,10 @@ const Users = () => {
         </thead>
         <tbody>{users.map(user => renderItem(user))}</tbody>
       </table>
+
+      <button className="btn btn-primary" onClick={getUsers}>
+        Next
+      </button>
     </>
   );
 };
