@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { reqResApi } from '../api/reqRes';
 import { ReqResList, Data } from '../interfaces/reqRes.interface';
 
-const useUsers = (): [Data[], () => Promise<void>] => {
+const useUsers = (): [Data[], () => void, () => void] => {
   const [users, setUsers] = useState<Data[]>([]);
   const pageRef = useRef(1);
 
@@ -19,13 +19,27 @@ const useUsers = (): [Data[], () => Promise<void>] => {
 
     if (resp.data.data.length) {
       setUsers(resp.data.data);
-      pageRef.current++;
+    } else {
+      pageRef.current--;
+      alert('There are not more records');
+    }
+  };
+
+  const prevPage = () => {
+    if (pageRef.current > 1) {
+      pageRef.current--;
+      getUsers();
     } else {
       alert('There are not more records');
     }
   };
 
-  return [users, getUsers];
+  const nextPage = () => {
+    pageRef.current++;
+    getUsers();
+  };
+
+  return [users, prevPage, nextPage];
 };
 
 export default useUsers;
